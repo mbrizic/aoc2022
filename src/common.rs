@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
@@ -34,10 +35,9 @@ impl Timer {
         return Timer{ start_time: start_time, last_snapshot: start_time };
     }
 
-    pub fn log(&mut self, task_number: &str, result: impl Into<i64>) {
-        let result: i64 = result.into();
+    pub fn log(&mut self, task_number: &str, result: impl Display) {
 
-        println!("| {}\t| {:.2?}\t| {}", task_number, self.last_snapshot.elapsed(), result);
+        println!("| {}\t| {:.2?}\t| {}", task_number, self.last_snapshot.elapsed(), result.to_string());
 
         self.last_snapshot = Instant::now();
     } 

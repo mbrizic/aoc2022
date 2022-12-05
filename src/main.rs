@@ -1,8 +1,8 @@
-use std::time::Instant;
-
 mod task_01;
 mod task_02;
 mod task_03;
+mod task_04;
+// mod task_05;
 
 pub mod common;
 
@@ -11,11 +11,13 @@ fn main() {
     println!("| Task \t| Time \t\t| Answer");
     println!("|-------|---------------|---------------");
 
-    let now = Instant::now();
+    let mut timer = common::Timer::new();
     
-    task_01::solution::run();
-    task_02::solution::run();
-    task_03::solution::run();
+    task_01::solution::run(&mut timer);
+    task_02::solution::run(&mut timer);
+    task_03::solution::run(&mut timer);
+    task_04::solution::run(&mut timer);
+    // task_05::solution::run(&mut timer);
 
-    println!("\n> Total: {:.2?}", now.elapsed());
+    println!("\n> Total: {:.2?}", timer.start_time.elapsed());
 }

@@ -1,11 +1,6 @@
-use crate::common::benchmark;
+use crate::common::Timer;
 
-pub fn run() {
-    benchmark("04.1", &solve_first_part);
-    benchmark("04.2", &solve_second_part);
-}
-
-fn solve_first_part() -> i64 {
+pub fn run(timer: &mut Timer) {
     let lines = include_str!("./input.txt")
         .lines()
         .map(|line| line.split(",").collect::<Vec<&str>>())
@@ -17,6 +12,12 @@ fn solve_first_part() -> i64 {
             }).collect::<Vec<Vec<u32>>>();
         }).collect::<Vec<Vec<Vec<u32>>>>();
 
+
+    solve_first_part(&lines, timer);
+    solve_second_part(&lines, timer);
+}
+
+fn solve_first_part(lines: &Vec<Vec<Vec<u32>>>, timer: &mut Timer) {
     let mut counter = 0;
 
     for line in lines {
@@ -36,23 +37,11 @@ fn solve_first_part() -> i64 {
     }
 
     assert_eq!(counter, 540);
+    timer.log("04.1", counter);
 
-    return counter as i64;
 }
 
-
-fn solve_second_part() -> i64 {
-    let lines = include_str!("./input.txt")
-        .lines()
-        .map(|line| line.split(",").collect::<Vec<&str>>())
-        .map(|assignments| {
-            return assignments.iter().map(|assignment| {
-                return assignment.split("-")
-                    .map(|num| num.parse::<u32>().unwrap())
-                    .collect::<Vec<u32>>();
-            }).collect::<Vec<Vec<u32>>>();
-        }).collect::<Vec<Vec<Vec<u32>>>>();
-
+fn solve_second_part(lines: &Vec<Vec<Vec<u32>>>, timer: &mut Timer) {
     let mut counter = 0;
 
     for line in lines {
@@ -78,6 +67,6 @@ fn solve_second_part() -> i64 {
     }
 
     assert_eq!(counter, 872);
+    timer.log("04.2", counter);
 
-    return counter as i64;
 }

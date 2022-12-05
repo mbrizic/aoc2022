@@ -22,13 +22,23 @@ pub fn print_results(task_number: &str, result: &String, time: Duration) {
     println!("| {}\t| {:.2?}\t| {}", task_number, time, result);
 }
 
-pub fn benchmark(
-    task_number: &str,
-    function: &dyn Fn() -> i64
-) {
-    let now = Instant::now();
+pub struct Timer {
+    pub start_time: Instant,
+    pub last_snapshot: Instant
+}
 
-    let result = function();
+impl Timer {
+    pub fn new() -> Timer {
+        let start_time = Instant::now();
 
-    println!("| {}\t| {:.2?}\t| {}", task_number, now.elapsed(), result);
+        return Timer{ start_time: start_time, last_snapshot: start_time };
+    }
+
+    pub fn log(&mut self, task_number: &str, result: impl Into<i64>) {
+        let result: i64 = result.into();
+
+        println!("| {}\t| {:.2?}\t| {}", task_number, self.last_snapshot.elapsed(), result);
+
+        self.last_snapshot = Instant::now();
+    } 
 }

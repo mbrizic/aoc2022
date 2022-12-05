@@ -1,10 +1,14 @@
 use std::collections::HashMap;
 
-use crate::common::benchmark;
+use crate::common::Timer;
 
-pub fn run() {
-    benchmark("02.1", &solve_first_part);
-    benchmark("02.2", &solve_second_part);
+pub fn run(timer: &mut Timer) {
+    let lines = include_str!("./input.txt")
+        .lines()
+        .collect::<Vec<&str>>();
+
+    solve_first_part(&lines, timer);
+    solve_second_part(&lines, timer);
 }
 
 const LOSS: i32 = 0;
@@ -15,11 +19,7 @@ const ROCK: i32 = 1;
 const PAPER: i32 = 2;
 const SCISSORS: i32 = 3;
 
-fn solve_first_part() -> i64 {
-    let lines = include_str!("./input.txt")
-        .lines()
-        .collect::<Vec<&str>>();
-
+fn solve_first_part(lines: &Vec<&str>, timer: &mut Timer) {
     let mut total_score = 0;
 
     let combination_points_map: HashMap<&str, i32> = HashMap::from([
@@ -39,15 +39,11 @@ fn solve_first_part() -> i64 {
     });
 
     assert_eq!(total_score, 13675);
+    timer.log("02.1", total_score);
 
-    return total_score as i64;
 }
 
-fn solve_second_part() -> i64 {
-    let lines = include_str!("./input.txt")
-        .lines()
-        .collect::<Vec<&str>>();
-
+fn solve_second_part(lines: &Vec<&str>, timer: &mut Timer) {
     let mut total_score = 0;
 
     let combination_points_map: HashMap<&str, i32> = HashMap::from([
@@ -67,6 +63,6 @@ fn solve_second_part() -> i64 {
     });
 
     assert_eq!(total_score, 14184);
-
-    return total_score as i64;
+    timer.log("02.2", total_score);
+    
 }

@@ -1,4 +1,4 @@
-use crate::common::{Timer};
+use crate::common::Timer;
 
 const SPACE_KEY_CODE: u32 = 32;
 
@@ -24,10 +24,11 @@ pub fn run(timer: &mut Timer) {
         .map(|item| item.1)
         .collect::<Vec<Vec<char>>>();
 
-    let mut stacks: Vec<Vec<char>> = vec!();
+    let mut stacks: Vec<Vec<char>> = vec![];
 
     for i in 0..stacks_height {
-        let mapped: Vec<char> = unformatted_stacks.iter()
+        let mapped: Vec<char> = unformatted_stacks
+            .iter()
             .map(|stack| *stack.get(i).unwrap())
             .filter(|item| *item as u32 != SPACE_KEY_CODE)
             .collect();
@@ -97,9 +98,7 @@ fn solve_second_part(stacks: &mut Vec<Vec<char>>, commands: &Vec<Vec<usize>>, ti
         }
 
         for item in items_to_move.iter().rev() {
-            stacks[stack_to_move_to].push(
-                *item
-            );
+            stacks[stack_to_move_to].push(*item);
         }
     }
 
@@ -113,5 +112,4 @@ fn solve_second_part(stacks: &mut Vec<Vec<char>>, commands: &Vec<Vec<usize>>, ti
 
     assert_eq!(result, "BQDNWJPVJ");
     timer.log("05.2", result);
-
 }

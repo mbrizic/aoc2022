@@ -54,18 +54,15 @@ pub fn run(timer: &mut Timer) {
 }
 
 fn solve_first_part(stacks: &mut Vec<Vec<char>>, commands: &Vec<Vec<usize>>, timer: &mut Timer) {
-
     for command in commands {
         let how_many_to_move = *command.get(0).unwrap();
         let stack_to_move_from = *command.get(1).unwrap() - 1;
         let stack_to_move_to = *command.get(2).unwrap() - 1;
 
-        for _ in 0..how_many_to_move { 
+        for _ in 0..how_many_to_move {
             let item_to_move = stacks[stack_to_move_from].pop().unwrap();
 
-            stacks[stack_to_move_to].push(
-                item_to_move
-            );
+            stacks[stack_to_move_to].push(item_to_move);
         }
     }
 
@@ -79,19 +76,17 @@ fn solve_first_part(stacks: &mut Vec<Vec<char>>, commands: &Vec<Vec<usize>>, tim
 
     assert_eq!(result, "QPJPLMNNR");
     timer.log("05.1", result);
-
 }
 
 fn solve_second_part(stacks: &mut Vec<Vec<char>>, commands: &Vec<Vec<usize>>, timer: &mut Timer) {
-
     for command in commands {
         let how_many_to_move = *command.get(0).unwrap();
         let stack_to_move_from = *command.get(1).unwrap() - 1;
         let stack_to_move_to = *command.get(2).unwrap() - 1;
 
-        let mut items_to_move: Vec<char> = vec!();
+        let mut items_to_move: Vec<char> = vec![];
 
-        for _ in 0..how_many_to_move { 
+        for _ in 0..how_many_to_move {
             let item = stacks[stack_to_move_from].pop().unwrap();
 
             items_to_move.push(item);

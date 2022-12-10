@@ -8,20 +8,20 @@ pub fn run(timer: &mut Timer) {
 }
 
 fn solve_first_part(input: &str, timer: &mut Timer) {
-    let result = solve(&input, 4, timer);
+    let result = solve(&input, 4);
 
     assert_eq!(result, 1647);
     timer.log("06.1", result);
 }
 
 fn solve_second_part(input: &str, timer: &mut Timer) {
-    let result = solve(&input, 14, timer);
+    let result = solve(&input, 14);
 
     assert_eq!(result, 2447);
     timer.log("06.2", result);
 }
 
-fn solve(input: &str, step_size: usize, timer: &mut Timer) -> usize {
+fn solve(input: &str, step_size: usize) -> usize {
     let chars = input.chars().collect::<Vec<char>>();
     let step_size: usize = step_size - 1;
 

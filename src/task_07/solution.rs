@@ -58,7 +58,7 @@ fn solve(input: &'static str, timer: &mut Timer) {
                         active_path.push(param);
                     }
                 }
-                default => (),
+                _ => (),
             }
         } else {
             let (size, name) = parse_line_from_output(line);
@@ -84,7 +84,7 @@ fn solve(input: &'static str, timer: &mut Timer) {
 
     let mut directory_sizes: HashMap<String, i32> = HashMap::new();
 
-    for (depth, group) in groups.iter().rev() {
+    for (_depth, group) in groups.iter().rev() {
         for item in group {
             if item.is_dir() {
                 directory_sizes.insert(
@@ -156,7 +156,7 @@ fn calculate_dir_size(
 fn parse_command(cmd: &str) -> (usize, &str) {
     let mut segments = cmd.split(" ").skip(1); // Skip the "$" terminal input prefix
 
-    let cmd = segments.next().unwrap();
+    let _cmd = segments.next().unwrap();
     let param = segments.next().unwrap_or("");
 
     if param.is_empty() {

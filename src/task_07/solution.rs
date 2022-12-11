@@ -1,36 +1,33 @@
-use std::collections::{BTreeMap, HashMap};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::common::Timer;
 
 #[derive(Debug)]
 struct Node {
     name: &'static str,
-    path: String,
     size: i32,
-    depth: usize,
+    children: HashMap<String, Rc<RefCell<Node>>>,
 }
 
 impl Node {
-    pub fn new(name: &'static str, size: i32, path: &Vec<&str>) -> Node {
+    pub fn new(name: &'static str, size: i32) -> Node {
         Node {
             name: name,
             size: size,
-            path: path.join("/"),
-            depth: path.len(),
+            children: HashMap::new(),
         }
     }
 
-    pub fn full_path(&self) -> String {
-        format!("{}/{}", self.path, self.name)
+    pub fn set_size(&mut self, size: i32) {
+        self.size = size;
     }
 
-    pub fn is_dir(&self) -> bool {
-        self.size == 0
+    pub fn add_child(&mut self, child: Rc<RefCell<Node>>) {
+        let path = child.borrow_mut().name.to_string();
+
+        self.children.insert(path, child);
     }
 }
-
-const COMMAND_CD: usize = 1;
-const COMMAND_LS: usize = 2;
 
 pub fn run(timer: &mut Timer) {
     let input = include_str!("./input.txt");
@@ -39,138 +36,80 @@ pub fn run(timer: &mut Timer) {
 }
 
 fn solve(input: &'static str, timer: &mut Timer) {
-    let mut file_tree: Vec<Node> = vec![];
-    let mut active_path: Vec<&str> = vec![""];
+    let root = Rc::new(RefCell::new(Node::new("/", 0)));
+
+    let mut current_dir = root.clone();
+    let mut stack: Vec<Rc<RefCell<Node>>> = vec![current_dir.clone()];
 
     for line in input.lines().skip(1) {
-        if line.starts_with("$") {
-            let (cmd, param) = parse_command(line);
+        let cmd = line.split_ascii_whitespace().collect::<Vec<&str>>();
 
-            match cmd {
-                COMMAND_CD => {
-                    if param == ".." {
-                        active_path.pop();
-                    } else {
-                        let new_node = Node::new(param, 0, &active_path);
+        if cmd[0] == "$" {
+            if cmd[1] == "cd" {
+                let dir_name = cmd[2];
 
-                        file_tree.push(new_node);
+                if dir_name == ".." {
+                    stack.pop().unwrap();
+                    current_dir = stack.last().unwrap().clone();
+                } else {
+                    let new_node = Rc::new(RefCell::new(Node::new(dir_name, 0)));
 
-                        active_path.push(param);
-                    }
+                    current_dir.borrow_mut().add_child(new_node.clone());
+
+                    current_dir = new_node.clone();
+
+                    stack.push(new_node.clone());
                 }
-                _ => (),
             }
         } else {
-            let (size, name) = parse_line_from_output(line);
+            let size = cmd[0].parse::<i32>().unwrap_or(0);
+            let name = cmd[1];
 
-            let node = Node::new(name, size, &active_path);
+            let new_node = Rc::new(RefCell::new(Node::new(name, size)));
 
-            file_tree.push(node);
+            current_dir.borrow_mut().add_child(new_node.clone());
         }
     }
 
-    file_tree.sort_unstable_by(|a, b| a.full_path().cmp(&b.full_path()));
-    file_tree.dedup_by_key(|a| a.full_path());
+    let mut directory_sizes_report: Vec<i32> = vec![];
 
-    let mut groups: BTreeMap<usize, Vec<&Node>> = BTreeMap::new();
+    calculate_total_children_size(&root, &mut directory_sizes_report);
 
-    for node in &file_tree {
-        if groups.contains_key(&node.depth) {
-            groups.get_mut(&node.depth).unwrap().push(node.clone());
-        } else {
-            groups.insert(node.depth, vec![node.clone()]);
-        }
-    }
+    let total_folders_size = directory_sizes_report
+        .iter()
+        .filter(|item| *item < &100_000)
+        .fold(0, |acc, size| acc + size);
 
-    let mut directory_sizes: HashMap<String, i32> = HashMap::new();
+    assert_eq!(total_folders_size, 1306611);
+    timer.log("07.1", total_folders_size);
 
-    for (_depth, group) in groups.iter().rev() {
-        for item in group {
-            if item.is_dir() {
-                directory_sizes.insert(
-                    item.full_path(),
-                    calculate_dir_size(&file_tree, &directory_sizes, &item),
-                );
-            }
-        }
-    }
-
-    let root_folder_size = groups.get(&1).unwrap().iter().fold(0, |acc, node| {
-        if node.is_dir() {
-            let size = directory_sizes.get(&node.full_path()).unwrap();
-            acc + size
-        } else {
-            acc + node.size
-        }
-    });
-
-    let directory_sizes_below_threshold = directory_sizes.iter().filter(|size| size.1 < &100_000);
-
-    let total_folder_size = &directory_sizes_below_threshold
-        .fold(0, |acc, item| acc + directory_sizes.get(item.0).unwrap());
-
-    assert_eq!(*total_folder_size, 1306611);
-    timer.log("07.1", *total_folder_size);
-
-    let free_disk_space = 70_000_000 - root_folder_size;
+    let free_disk_space = 70_000_000 - root.clone().borrow_mut().size;
     let space_to_free_up = 30_000_000 - free_disk_space;
 
-    let mut potential_directories = directory_sizes
-        .values()
+    let smallest_dir_to_delete_size = *directory_sizes_report
+        .iter()
         .filter(|&&size| size > space_to_free_up)
-        .collect::<Vec<&i32>>();
+        .min_by(|a, b| a.cmp(b))
+        .unwrap();
 
-    potential_directories.sort_unstable();
-
-    let smallest_dir_to_delete = **potential_directories.get(0).unwrap();
-
-    assert_eq!(smallest_dir_to_delete, 13210366);
-    timer.log("07.2", smallest_dir_to_delete);
+    assert_eq!(smallest_dir_to_delete_size, 13210366);
+    timer.log("07.2", smallest_dir_to_delete_size);
 }
 
-fn calculate_dir_size(
-    file_tree: &Vec<Node>,
-    directory_sizes: &HashMap<String, i32>,
-    dir: &Node,
-) -> i32 {
-    if dir.size != 0 {
-        return dir.size;
+fn calculate_total_children_size(rc: &Rc<RefCell<Node>>, report: &mut Vec<i32>) -> i32 {
+    let mut node = rc.borrow_mut();
+
+    if node.size > 0 {
+        return node.size;
     }
 
-    let children = file_tree
-        .iter()
-        .filter(|node| node.depth == dir.depth + 1 && node.full_path().contains(&dir.full_path()));
-
-    let size = children.fold(0, |acc, node| {
-        if node.is_dir() {
-            let size = directory_sizes.get(&node.full_path()).unwrap();
-            acc + size
-        } else {
-            acc + node.size
-        }
+    let size_of_all_children = node.children.iter().fold(0, |acc, (name, item)| {
+        acc + calculate_total_children_size(&item.clone(), report)
     });
 
-    size
-}
+    node.set_size(size_of_all_children);
 
-fn parse_command(cmd: &str) -> (usize, &str) {
-    let mut segments = cmd.split(" ").skip(1); // Skip the "$" terminal input prefix
+    report.push(node.size);
 
-    let _cmd = segments.next().unwrap();
-    let param = segments.next().unwrap_or("");
-
-    if param.is_empty() {
-        (COMMAND_LS, "")
-    } else {
-        (COMMAND_CD, param)
-    }
-}
-
-fn parse_line_from_output(output: &str) -> (i32, &str) {
-    let mut segments = output.split(" ").into_iter();
-
-    let size = segments.next().unwrap().parse::<i32>().unwrap_or(0);
-    let name = segments.next().unwrap();
-
-    (size, name)
+    size_of_all_children
 }

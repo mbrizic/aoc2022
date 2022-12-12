@@ -103,7 +103,7 @@ fn calculate_total_children_size(rc: &Rc<RefCell<Node>>, report: &mut Vec<i32>) 
         return node.size;
     }
 
-    let size_of_all_children = node.children.iter().fold(0, |acc, (name, item)| {
+    let size_of_all_children = node.children.iter().fold(0, |acc, (_, item)| {
         acc + calculate_total_children_size(&item.clone(), report)
     });
 

@@ -9,6 +9,7 @@ mod task_08;
 mod task_09;
 mod task_10;
 mod task_11;
+mod task_12;
 
 pub mod common;
 
@@ -30,6 +31,7 @@ fn main() {
     task_09::solution::run(&mut timer);
     task_10::solution::run(&mut timer);
     task_11::solution::run(&mut timer);
+    task_12::solution::run(&mut timer);
 
     println!("\n> Total: {:.2?}", timer.start_time.elapsed());
 }
